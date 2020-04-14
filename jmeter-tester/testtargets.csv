@@ -1,0 +1,8 @@
+uri,http,qsa
+#http://localhost:8000/def/frog,,Y
+#https://w3id.org/mediatype/text/n3,Y,Y
+#http://www.opengis.net/def/docs/10-140r1,Y,Y
+http://defs-dev.opengis.net/def/docs/10-140r1,Y,Y
+#https://www.opengis.net/def/appschema/hy_features/hyf/HY_CatchmentAggregate
+#https://gsq.cat/foi/province/NorthAustralianCraton,Y,Y
+#https://gsq.cat/foi

@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="3.2" jmeter="3.3 r1808647">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <TestFragmentController guiclass="TestFragmentControllerGui" testclass="TestFragmentController" testname="Test Fragment" enabled="false"/>
+      <hashTree>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="test path" enabled="false">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="path" elementType="Argument">
+              <stringProp name="Argument.name">path</stringProp>
+              <stringProp name="Argument.value">http://www.opengis.net/def/docs/09-146r2</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </Arguments>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Cache-Control</stringProp>
+              <stringProp name="Header.value">no-cache</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Get ${path}" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain"></stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">${path}</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="TestPlan.comments">IF the server supports CNEG-AP then the Link Header will contain alternates information. This may be in the direct response (e.g. a  303 redirectr) or in the final resource.</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Get link list" enabled="true">
+            <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+            <stringProp name="RegexExtractor.refname">alt</stringProp>
+            <stringProp name="RegexExtractor.regex">Link: (.*)</stringProp>
+            <stringProp name="RegexExtractor.template">$1$</stringProp>
+            <stringProp name="RegexExtractor.default">NoLink</stringProp>
+            <stringProp name="RegexExtractor.match_number">1</stringProp>
+            <stringProp name="Scope.variable">testme</stringProp>
+          </RegexExtractor>
+          <hashTree/>
+          <DebugPostProcessor guiclass="TestBeanGUI" testclass="DebugPostProcessor" testname="Debug PostProcessor" enabled="true">
+            <boolProp name="displayJMeterProperties">false</boolProp>
+            <boolProp name="displayJMeterVariables">true</boolProp>
+            <boolProp name="displaySamplerProperties">true</boolProp>
+            <boolProp name="displaySystemProperties">false</boolProp>
+          </DebugPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If  Link header" enabled="true">
+          <stringProp name="IfController.condition">${__jexl3(vars.get(&quot;alt&quot;) != &quot;NoLink&quot; )}</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="extract profiles and mime types" enabled="true">
+            <stringProp name="cacheKey"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+String RXprofile=&apos;.*profile=&quot;([^&quot;]*)&quot;.*&apos; ;
+Pattern REGEX_profile = Pattern.compile(RXprofile)
+
+String[] links  = vars.get(&apos;alt&apos;).split(&apos;\\s*,\\s*&apos;);
+
+List profiles = new ArrayList();
+
+vars.put(&quot;debug&quot; , links[0]);
+for(int i=0;i&lt;links.length;i++)
+{
+    vars.put(&quot;link_&quot; + (i+1), links[i]);
+    Matcher isalt = REGEX_profile.matcher(links[i])
+    if( isalt.matches() ) {
+	    	String prof = isalt.group(1);
+	    
+	    	String resource;
+	     String type;
+
+	     if( ! profiles.contains(prof) ) { profiles.add(prof); }
+	     	
+	    	for( seg in links[i].split(&quot;\\s*;\\s*&quot;) ) {  	
+	    		if ( seg.startsWith(&quot;&lt;&quot;) ) {
+	    			resource = seg.substring(1,seg.length()-1 );
+	    		} else if ( seg.startsWith(&quot;type=&quot;) ) {
+	    			type = seg.substring(6,seg.length()-1 );
+	    		}
+	    	}
+
+	    	String typelist = vars.get(&quot;altprofile_types_&quot; + prof) ;
+	    	typelist = typelist == null ? &quot;&quot; : (typelist + &quot;,&quot;) ;
+	    	vars.put( &quot;altprofile_types_&quot; + prof , typelist + type  );
+    	}
+}
+for(int p=0;p&lt;profiles.size();p++) {
+ vars.put(&quot;altprofile_&quot; + (p+1) , profiles[p]);
+}
+</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223Sampler>
+          <hashTree/>
+          <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="JSR223 Assertion" enabled="false">
+            <stringProp name="cacheKey">1c611928-ac8c-45f5-8753-22446e47bfb9</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+String RXprofile=&apos;.*profile=&quot;([^&quot;]*)&quot;.*&apos; ;
+Pattern REGEX_profile = Pattern.compile(RXprofile)
+
+String[] links  = vars.get(&apos;alt&apos;).split(&apos;\\s*,\\s*&apos;);
+
+int p = 0 ;
+vars.put(&quot;debug&quot; , links[0]);
+for(int i=0;i&lt;links.length;i++)
+{
+    vars.put(&quot;link_&quot; + (i+1), links[i]);
+    Matcher isalt = REGEX_profile.matcher(links[i])
+    if( isalt.matches() ) {
+	    	p++ ;
+	    	String prof = isalt.group(1);
+	    
+	    	String resource;
+	     String type;
+
+	     vars.put(&quot;altprofile_&quot; + p , prof);
+	     	
+	    	for( seg in links[i].split(&quot;\\s*;\\s*&quot;) ) {  	
+	    		if ( seg.startsWith(&quot;&lt;&quot;) ) {
+	    			resource = seg.substring(1,seg.length()-1 );
+	    		} else if ( seg.startsWith(&quot;type=&quot;) ) {
+	    			type = seg.substring(6,seg.length()-1 );
+	    		}
+	    	}
+	    	if( type == null ) {
+	    		
+		    AssertionResult.setFailure(true)
+	    		AssertionResult.setFailureMessage(&apos;Link to alternate resource without media type : &apos; + links[i] );
+	    	}
+	    	String typelist = vars.get(&quot;altprofile_types_&quot; + p) ;
+	    	typelist = typelist = null ? &quot;&quot; : (typelist + &quot;,&quot;) ;
+	    	vars.put( &quot;altprofile_types_&quot; + p , typelist + type  );
+    	}
+}</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223Assertion>
+          <hashTree/>
+          <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller" enabled="true">
+            <stringProp name="ForeachController.inputVal">altprofile</stringProp>
+            <stringProp name="ForeachController.returnVal">prof</stringProp>
+            <boolProp name="ForeachController.useSeparator">true</boolProp>
+          </ForeachController>
+          <hashTree>
+            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="extract mime types list for prof" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters">${prof}</stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey"></stringProp>
+              <stringProp name="script">String formats = vars.get( &quot;altprofile_types_&quot; + vars.get(&quot;prof&quot;) );
+String[] formatarray = formats.split(&apos;,&apos;) ;
+for ( int i = 0; i&lt; formatarray.length; i++ ) {
+	vars.put (&quot;format_&quot; + (i+1), formatarray[i]) ;
+}</stringProp>
+            </JSR223Sampler>
+            <hashTree/>
+            <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler ${prof} ${__V(altprofile_types_${prof})}" enabled="false">
+              <boolProp name="displayJMeterProperties">false</boolProp>
+              <boolProp name="displayJMeterVariables">true</boolProp>
+              <boolProp name="displaySystemProperties">false</boolProp>
+            </DebugSampler>
+            <hashTree/>
+            <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller" enabled="true">
+              <stringProp name="ForeachController.inputVal">format</stringProp>
+              <stringProp name="ForeachController.returnVal">mime</stringProp>
+              <boolProp name="ForeachController.useSeparator">true</boolProp>
+            </ForeachController>
+            <hashTree>
+              <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Check for equivalent mimetypes for ${mime}" enabled="true">
+                <boolProp name="displayJMeterProperties">false</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugSampler>
+              <hashTree>
+                <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="BeanShell PreProcessor" enabled="true">
+                  <stringProp name="filename"></stringProp>
+                  <stringProp name="parameters"></stringProp>
+                  <boolProp name="resetInterpreter">false</boolProp>
+                  <stringProp name="script">switch ( vars.get(&quot;mime&quot;) ) {
+	case &quot;application/rdf+ttl&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;text/turtle&quot;) ;
+	 	break;
+	case &quot;text/turtle&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;application/rdf+ttl&quot;) ;
+	 	break;
+	 case &quot;applicatioin/ld+json&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;application/json&quot;) ;
+	 	break;
+	case &quot;applicatioin/son&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;application/ld+json&quot;) ;
+	 	break;
+	default: 
+		vars.put(&quot;altmime&quot;, vars.get(&quot;mime&quot;)) ;
+}</stringProp>
+                </BeanShellPreProcessor>
+                <hashTree/>
+              </hashTree>
+              <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler ${prof} -- ${mime}" enabled="false">
+                <boolProp name="displayJMeterProperties">false</boolProp>
+                <boolProp name="displayJMeterVariables">true</boolProp>
+                <boolProp name="displaySystemProperties">false</boolProp>
+              </DebugSampler>
+              <hashTree/>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Accept-Profile</stringProp>
+                    <stringProp name="Header.value">&lt;${prof}&gt;</stringProp>
+                  </elementProp>
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Accept</stringProp>
+                    <stringProp name="Header.value">${mime}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request  ${path}  -- ${prof}  -- ${mime}" enabled="true">
+                <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+                  <collectionProp name="Arguments.arguments"/>
+                </elementProp>
+                <stringProp name="HTTPSampler.domain"></stringProp>
+                <stringProp name="HTTPSampler.port"></stringProp>
+                <stringProp name="HTTPSampler.protocol"></stringProp>
+                <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+                <stringProp name="HTTPSampler.path">${path}</stringProp>
+                <stringProp name="HTTPSampler.method">GET</stringProp>
+                <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+                <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+                <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+                <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+                <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+                <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+                <stringProp name="HTTPSampler.response_timeout"></stringProp>
+              </HTTPSamplerProxy>
+              <hashTree>
+                <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="check is mime ${mime} (or ${altmime} )" enabled="true">
+                  <collectionProp name="Asserion.test_strings">
+                    <stringProp name="-1632051746">Content-Type: ${mime}</stringProp>
+                    <stringProp name="2007153547">Content-Type: ${altmime}</stringProp>
+                  </collectionProp>
+                  <stringProp name="Assertion.test_field">Assertion.response_headers</stringProp>
+                  <boolProp name="Assertion.assume_success">false</boolProp>
+                  <intProp name="Assertion.test_type">48</intProp>
+                </ResponseAssertion>
+                <hashTree/>
+              </hashTree>
+            </hashTree>
+          </hashTree>
+        </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View results" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+    <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="WorkBench" enabled="true">
+      <boolProp name="WorkBench.save">true</boolProp>
+    </WorkBench>
+    <hashTree/>
+  </hashTree>
+</jmeterTestPlan>
