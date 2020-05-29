@@ -80,7 +80,7 @@
               </DebugSampler>
               <hashTree/>
               <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="test QSA for ${path}" enabled="true">
-                <stringProp name="IncludeController.includepath">C:\repos\rob-metalinkage\jmeter-tests-4-conneg-by-ap\cneg-qsa.jmx</stringProp>
+                <stringProp name="IncludeController.includepath">cneg-qsa.jmx</stringProp>
               </IncludeController>
               <hashTree/>
             </hashTree>
@@ -97,7 +97,7 @@
               </DebugSampler>
               <hashTree/>
               <IncludeController guiclass="IncludeControllerGui" testclass="IncludeController" testname="test HTTP for ${path}" enabled="true">
-                <stringProp name="IncludeController.includepath">C:\repos\rob-metalinkage\jmeter-tests-4-conneg-by-ap\cneg-http.jmx</stringProp>
+                <stringProp name="IncludeController.includepath">cneg-http.jmx</stringProp>
               </IncludeController>
               <hashTree/>
             </hashTree>
