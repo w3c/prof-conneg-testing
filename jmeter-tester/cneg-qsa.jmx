@@ -403,6 +403,9 @@ if( &quot;Failed to locate view token&quot;.equals(vars.get(&quot;viewname&quot;
 	 case &quot;application/ld+json&quot; :
 	 	vars.put(&quot;altmime&quot;, &quot;application/json&quot;) ;
 	 	break;
+	 case &quot;application/schema+json&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;application/json&quot;) ;
+	 	break;
 	case &quot;application/json&quot; :
 	 	vars.put(&quot;altmime&quot;, &quot;application/ld+json&quot;) ;
 	 	break;

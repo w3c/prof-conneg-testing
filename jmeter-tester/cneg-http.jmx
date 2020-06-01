@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="3.2" jmeter="3.3 r1808647">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.2.1">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
       <stringProp name="TestPlan.comments"></stringProp>
@@ -76,7 +76,7 @@
         </IfController>
         <hashTree>
           <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="extract profiles and mime types" enabled="true">
-            <stringProp name="cacheKey"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
             <stringProp name="filename"></stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="script">import java.util.regex.Matcher;
@@ -123,7 +123,7 @@ for(int p=0;p&lt;profiles.size();p++) {
           </JSR223Sampler>
           <hashTree/>
           <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="JSR223 Assertion" enabled="false">
-            <stringProp name="cacheKey">1c611928-ac8c-45f5-8753-22446e47bfb9</stringProp>
+            <stringProp name="cacheKey">true</stringProp>
             <stringProp name="filename"></stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="script">import java.util.regex.Matcher;
@@ -179,9 +179,15 @@ for(int i=0;i&lt;links.length;i++)
               <stringProp name="scriptLanguage">groovy</stringProp>
               <stringProp name="parameters">${prof}</stringProp>
               <stringProp name="filename"></stringProp>
-              <stringProp name="cacheKey"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
               <stringProp name="script">String formats = vars.get( &quot;altprofile_types_&quot; + vars.get(&quot;prof&quot;) );
 String[] formatarray = formats.split(&apos;,&apos;) ;
+vars.getIterator().each {
+    def name = it.getKey()
+    if (name.startsWith(&apos;format_&apos;)) {
+        vars.put(name, null)
+    }
+}
 for ( int i = 0; i&lt; formatarray.length; i++ ) {
 	vars.put (&quot;format_&quot; + (i+1), formatarray[i]) ;
 }</stringProp>
@@ -216,10 +222,13 @@ for ( int i = 0; i&lt; formatarray.length; i++ ) {
 	case &quot;text/turtle&quot; :
 	 	vars.put(&quot;altmime&quot;, &quot;application/rdf+ttl&quot;) ;
 	 	break;
-	 case &quot;applicatioin/ld+json&quot; :
+	 case &quot;application/ld+json&quot; :
 	 	vars.put(&quot;altmime&quot;, &quot;application/json&quot;) ;
 	 	break;
-	case &quot;applicatioin/son&quot; :
+	 case &quot;application/schema+json&quot; :
+	 	vars.put(&quot;altmime&quot;, &quot;application/json&quot;) ;
+	 	break;
+	case &quot;application/json&quot; :
 	 	vars.put(&quot;altmime&quot;, &quot;application/ld+json&quot;) ;
 	 	break;
 	default: 
@@ -274,6 +283,7 @@ for ( int i = 0; i&lt; formatarray.length; i++ ) {
                   <stringProp name="Assertion.test_field">Assertion.response_headers</stringProp>
                   <boolProp name="Assertion.assume_success">false</boolProp>
                   <intProp name="Assertion.test_type">48</intProp>
+                  <stringProp name="Assertion.custom_message"></stringProp>
                 </ResponseAssertion>
                 <hashTree/>
               </hashTree>
@@ -318,9 +328,5 @@ for ( int i = 0; i&lt; formatarray.length; i++ ) {
         <hashTree/>
       </hashTree>
     </hashTree>
-    <WorkBench guiclass="WorkBenchGui" testclass="WorkBench" testname="WorkBench" enabled="true">
-      <boolProp name="WorkBench.save">true</boolProp>
-    </WorkBench>
-    <hashTree/>
   </hashTree>
 </jmeterTestPlan>
